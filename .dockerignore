@@ -1,0 +1,42 @@
+# Ignore git directory
+.git
+.gitignore
+
+# Python artifacts
+__pycache__
+*.py[cod]
+*.pyo
+.pytest_cache
+.coverage
+htmlcov/
+.ruff_cache
+
+# Virtual environments
+.venv
+venv
+env
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Local data and secrets
+data/
+*.db
+.env
+.env.*
+!.env.example
+secrets/
+
+# Documentation
+*.md
+!README.md
+
+# Tests (not needed in production image)
+tests/
+
+# Other
+.dockerignore
+Dockerfile
+docker-compose*.yml

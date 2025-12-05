@@ -1,0 +1,37 @@
+# Docker Compose - Development Environment
+# Usage: docker-compose -f docker-compose.dev.yml up --build
+
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: salon-api-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload: mount source code
+      - ./app:/app/app:ro
+      - ./pyproject.toml:/app/pyproject.toml:ro
+      # Persist SQLite database
+      - ./data:/app/data
+    environment:
+      - DEBUG=true
+      - DATABASE_URL=sqlite+aiosqlite:///./data/salon.db
+      # DEV ONLY - This secret is for local development only, never use in production
+      - SECRET_KEY=dev-secret-key-not-for-production-use-only-local
+      - UV_NO_CACHE=1
+    command: >
+      uvicorn app.main:app 
+      --host 0.0.0.0 
+      --port 8000 
+      --reload
+      --reload-dir /app/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
