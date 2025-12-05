@@ -1,0 +1,3 @@
+"""
+Beauty Salon Manager API
+"""
