@@ -15,7 +15,7 @@ from app.services.availability_service import AvailabilityService
 
 class VisitService:
     """Service for visit (appointment) management."""
-    
+
     def __init__(
         self,
         visit_repository: VisitRepository,
@@ -29,36 +29,36 @@ class VisitService:
         self.user_repository = user_repository
         self.service_repository = service_repository
         self.availability_service = availability_service
-    
+
     async def create_visit(self, data: VisitCreate) -> Visit:
         """Book a new visit."""
         # Verify customer exists
         customer = await self.customer_repository.get_by_id(data.customer_id)
         if not customer:
             raise NotFoundError("Customer", data.customer_id)
-        
+
         # Verify employee exists
         employee = await self.user_repository.get_by_id(data.employee_id)
         if not employee:
             raise NotFoundError("Employee", data.employee_id)
-        
+
         # Verify service exists and is active
         service = await self.service_repository.get_by_id(data.service_id)
         if not service:
             raise NotFoundError("Service", data.service_id)
         if not service.is_active:
             raise ValidationError("Service is not active")
-        
+
         # Check availability (will raise SlotUnavailableError if not available)
         await self.availability_service.is_slot_available(
             data.employee_id,
             data.start_datetime,
             service.duration_minutes,
         )
-        
+
         # Calculate end time and create visit
         end_datetime = data.start_datetime + timedelta(minutes=service.duration_minutes)
-        
+
         visit = Visit(
             customer_id=data.customer_id,
             employee_id=data.employee_id,
@@ -69,23 +69,23 @@ class VisitService:
             comment=data.comment,
             status=VisitStatus.SCHEDULED,
         )
-        
+
         return await self.visit_repository.create(visit)
-    
+
     async def get_visit(self, visit_id: int) -> Visit:
         """Get visit by ID."""
         visit = await self.visit_repository.get_by_id(visit_id)
         if not visit:
             raise NotFoundError("Visit", visit_id)
         return visit
-    
+
     async def get_visit_detail(self, visit_id: int) -> Visit:
         """Get visit with all relations loaded."""
         visit = await self.visit_repository.get_with_relations(visit_id)
         if not visit:
             raise NotFoundError("Visit", visit_id)
         return visit
-    
+
     async def list_visits(
         self,
         employee_id: int | None = None,
@@ -114,61 +114,61 @@ class VisitService:
             status=status,
         )
         return visits, count
-    
+
     async def update_visit(self, visit_id: int, data: VisitUpdate) -> Visit:
         """Update/reschedule a visit."""
         visit = await self.get_visit(visit_id)
-        
+
         if visit.status != VisitStatus.SCHEDULED:
             raise ValidationError("Can only update scheduled visits")
-        
+
         # Get current service for duration
         service = await self.service_repository.get_by_id(
             data.service_id or visit.service_id
         )
         if not service:
             raise NotFoundError("Service", data.service_id)
-        
+
         # Check availability if changing time or employee
         if data.start_datetime or data.employee_id:
             start_dt = data.start_datetime or visit.start_datetime
             emp_id = data.employee_id or visit.employee_id
-            
+
             await self.availability_service.is_slot_available(
                 emp_id,
                 start_dt,
                 service.duration_minutes,
                 exclude_visit_id=visit_id,
             )
-            
+
             if data.start_datetime:
                 visit.start_datetime = data.start_datetime
                 visit.end_datetime = data.start_datetime + timedelta(
                     minutes=service.duration_minutes
                 )
-            
+
             if data.employee_id:
                 visit.employee_id = data.employee_id
-        
+
         # Update other fields
         if data.customer_id:
             customer = await self.customer_repository.get_by_id(data.customer_id)
             if not customer:
                 raise NotFoundError("Customer", data.customer_id)
             visit.customer_id = data.customer_id
-        
+
         if data.service_id:
             visit.service_id = data.service_id
             visit.price = service.price
             visit.end_datetime = visit.start_datetime + timedelta(
                 minutes=service.duration_minutes
             )
-        
+
         if data.comment is not None:
             visit.comment = data.comment
-        
+
         return await self.visit_repository.update(visit)
-    
+
     async def update_status(
         self,
         visit_id: int,
@@ -178,7 +178,7 @@ class VisitService:
         visit = await self.get_visit(visit_id)
         visit.status = data.status
         return await self.visit_repository.update(visit)
-    
+
     async def cancel_visit(self, visit_id: int) -> None:
         """Cancel and delete a visit."""
         visit = await self.get_visit(visit_id)

@@ -1,9 +1,8 @@
 """
 Calendar service for aggregated calendar view.
 """
-from datetime import date, datetime, time
+from datetime import date, datetime
 
-from app.models.schedule import DayOfWeek
 from app.repositories.schedule_repository import ScheduleRepository
 from app.repositories.visit_repository import VisitRepository
 from app.schemas.calendar import CalendarEvent, CalendarResponse
@@ -12,7 +11,7 @@ from app.services.availability_service import WEEKDAY_MAP
 
 class CalendarService:
     """Service for calendar data aggregation."""
-    
+
     def __init__(
         self,
         visit_repository: VisitRepository,
@@ -20,7 +19,7 @@ class CalendarService:
     ):
         self.visit_repository = visit_repository
         self.schedule_repository = schedule_repository
-    
+
     async def get_calendar(
         self,
         start_date: date,
@@ -29,19 +28,19 @@ class CalendarService:
     ) -> CalendarResponse:
         """Get calendar events for a date range."""
         events: list[CalendarEvent] = []
-        
+
         # Get visits
         visits = await self.visit_repository.get_for_calendar(
             start_date, end_date, employee_id
         )
-        
+
         for visit in visits:
             color = "blue"
             if visit.status.value == "completed":
                 color = "green"
             elif visit.status.value == "cancelled":
                 color = "red"
-            
+
             events.append(CalendarEvent(
                 type="visit",
                 id=visit.id,
@@ -50,7 +49,7 @@ class CalendarService:
                 end=visit.end_datetime,
                 color=color,
             ))
-        
+
         # Get breaks for each day in range (if employee specified)
         if employee_id:
             current = start_date
@@ -59,7 +58,7 @@ class CalendarService:
                 schedule = await self.schedule_repository.get_by_employee_and_day(
                     employee_id, day_of_week
                 )
-                
+
                 if schedule:
                     for break_ in schedule.breaks:
                         events.append(CalendarEvent(
@@ -70,10 +69,10 @@ class CalendarService:
                             end=datetime.combine(current, break_.end_time),
                             color="gray",
                         ))
-                
+
                 current = date.fromordinal(current.toordinal() + 1)
-        
+
         # Sort by start time
         events.sort(key=lambda e: e.start)
-        
+
         return CalendarResponse(events=events)

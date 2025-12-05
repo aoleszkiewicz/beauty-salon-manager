@@ -27,7 +27,7 @@ async def get_calendar(
 ) -> CalendarResponse:
     """
     Get calendar events for a date range.
-    
+
     Returns visits and breaks formatted for calendar display.
     Compatible with frontend calendar libraries (e.g., FullCalendar).
     """

@@ -4,19 +4,18 @@ Visit schemas for request/response validation.
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from app.models.visit import VisitStatus
 from app.schemas.customer import CustomerResponse
 from app.schemas.service import ServiceResponse
 from app.schemas.user import UserResponse
 
-
 # ============== Request Schemas ==============
 
 class VisitCreate(BaseModel):
     """Schema for creating a visit (booking)."""
-    
+
     customer_id: int
     employee_id: int
     service_id: int
@@ -26,7 +25,7 @@ class VisitCreate(BaseModel):
 
 class VisitUpdate(BaseModel):
     """Schema for updating a visit (rescheduling)."""
-    
+
     customer_id: int | None = None
     employee_id: int | None = None
     service_id: int | None = None
@@ -36,7 +35,7 @@ class VisitUpdate(BaseModel):
 
 class VisitStatusUpdate(BaseModel):
     """Schema for updating visit status."""
-    
+
     status: VisitStatus
 
 
@@ -44,9 +43,9 @@ class VisitStatusUpdate(BaseModel):
 
 class VisitResponse(BaseModel):
     """Schema for visit response."""
-    
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     customer_id: int
     employee_id: int
@@ -60,9 +59,9 @@ class VisitResponse(BaseModel):
 
 class VisitDetailResponse(BaseModel):
     """Schema for detailed visit response with related entities."""
-    
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     customer: CustomerResponse
     employee: UserResponse
@@ -76,6 +75,6 @@ class VisitDetailResponse(BaseModel):
 
 class VisitListResponse(BaseModel):
     """Schema for list of visits response."""
-    
+
     items: list[VisitResponse]
     total: int

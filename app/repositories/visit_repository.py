@@ -3,7 +3,7 @@ Visit repository for data access.
 """
 from datetime import date, datetime
 
-from sqlalchemy import and_, func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -13,10 +13,10 @@ from app.repositories.base_repository import BaseRepository
 
 class VisitRepository(BaseRepository[Visit]):
     """Repository for Visit entity."""
-    
+
     def __init__(self, session: AsyncSession):
         super().__init__(Visit, session)
-    
+
     async def get_with_relations(self, visit_id: int) -> Visit | None:
         """Get visit with all relations loaded."""
         result = await self.session.execute(
@@ -29,7 +29,7 @@ class VisitRepository(BaseRepository[Visit]):
             )
         )
         return result.scalar_one_or_none()
-    
+
     async def get_by_employee_and_date(
         self,
         employee_id: int,
@@ -38,7 +38,7 @@ class VisitRepository(BaseRepository[Visit]):
         """Get all visits for an employee on a specific date."""
         start_of_day = datetime.combine(target_date, datetime.min.time())
         end_of_day = datetime.combine(target_date, datetime.max.time())
-        
+
         result = await self.session.execute(
             select(Visit)
             .where(
@@ -50,7 +50,7 @@ class VisitRepository(BaseRepository[Visit]):
             .order_by(Visit.start_datetime)
         )
         return list(result.scalars().all())
-    
+
     async def get_overlapping(
         self,
         employee_id: int,
@@ -66,13 +66,13 @@ class VisitRepository(BaseRepository[Visit]):
             Visit.start_datetime < end_dt,
             Visit.end_datetime > start_dt,
         )
-        
+
         if exclude_visit_id:
             stmt = stmt.where(Visit.id != exclude_visit_id)
-        
+
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def filter_visits(
         self,
         employee_id: int | None = None,
@@ -85,7 +85,7 @@ class VisitRepository(BaseRepository[Visit]):
     ) -> list[Visit]:
         """Filter visits by various criteria."""
         stmt = select(Visit)
-        
+
         if employee_id:
             stmt = stmt.where(Visit.employee_id == employee_id)
         if customer_id:
@@ -96,12 +96,12 @@ class VisitRepository(BaseRepository[Visit]):
             stmt = stmt.where(Visit.start_datetime <= datetime.combine(end_date, datetime.max.time()))
         if status:
             stmt = stmt.where(Visit.status == status)
-        
+
         stmt = stmt.order_by(Visit.start_datetime).offset(skip).limit(limit)
-        
+
         result = await self.session.execute(stmt)
         return list(result.scalars().all())
-    
+
     async def count_filter(
         self,
         employee_id: int | None = None,
@@ -112,7 +112,7 @@ class VisitRepository(BaseRepository[Visit]):
     ) -> int:
         """Count visits matching filter criteria."""
         stmt = select(func.count()).select_from(Visit)
-        
+
         if employee_id:
             stmt = stmt.where(Visit.employee_id == employee_id)
         if customer_id:
@@ -123,10 +123,10 @@ class VisitRepository(BaseRepository[Visit]):
             stmt = stmt.where(Visit.start_datetime <= datetime.combine(end_date, datetime.max.time()))
         if status:
             stmt = stmt.where(Visit.status == status)
-        
+
         result = await self.session.execute(stmt)
         return result.scalar() or 0
-    
+
     async def get_for_calendar(
         self,
         start_date: date,
@@ -141,10 +141,10 @@ class VisitRepository(BaseRepository[Visit]):
             selectinload(Visit.customer),
             selectinload(Visit.service),
         )
-        
+
         if employee_id:
             stmt = stmt.where(Visit.employee_id == employee_id)
-        
+
         stmt = stmt.order_by(Visit.start_datetime)
         result = await self.session.execute(stmt)
         return list(result.scalars().all())

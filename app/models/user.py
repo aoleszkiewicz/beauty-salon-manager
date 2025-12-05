@@ -11,16 +11,16 @@ from app.db.base import Base, TimestampMixin
 
 class UserRole(str, enum.Enum):
     """User role enumeration."""
-    
+
     ADMIN = "admin"
     EMPLOYEE = "employee"
 
 
 class User(Base, TimestampMixin):
     """User model representing salon employees and admins."""
-    
+
     __tablename__ = "users"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
     hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
@@ -31,7 +31,7 @@ class User(Base, TimestampMixin):
         nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
-    
+
     # Relationships
     schedules: Mapped[list["WorkSchedule"]] = relationship(
         "WorkSchedule",
@@ -43,7 +43,7 @@ class User(Base, TimestampMixin):
         back_populates="employee",
         cascade="all, delete-orphan",
     )
-    
+
     def __repr__(self) -> str:
         return f"<User {self.email} ({self.role.value})>"
 

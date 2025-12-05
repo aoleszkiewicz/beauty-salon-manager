@@ -6,7 +6,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.core.dependencies import (
-    CurrentAdmin,
     CurrentUser,
     get_current_user,
     get_schedule_service,

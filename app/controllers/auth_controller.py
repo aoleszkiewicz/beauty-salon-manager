@@ -6,7 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, status
 
 from app.core.dependencies import get_auth_service
-from app.schemas.user import LoginRequest, MessageResponse, TokenResponse, UserCreate
+from app.schemas.user import LoginRequest, MessageResponse, UserCreate
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -23,7 +23,7 @@ async def login(
 ) -> MessageResponse:
     """
     Authenticate with email and password.
-    
+
     Note: This API uses HTTP Basic Authentication for subsequent requests.
     This endpoint validates credentials and confirms they are correct.
     """
@@ -43,7 +43,7 @@ async def setup_admin(
 ) -> MessageResponse:
     """
     Create the initial admin user.
-    
+
     This endpoint should only be used once during initial setup.
     """
     await auth_service.create_initial_admin(

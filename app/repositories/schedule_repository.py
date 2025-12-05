@@ -11,10 +11,10 @@ from app.repositories.base_repository import BaseRepository
 
 class ScheduleRepository(BaseRepository[WorkSchedule]):
     """Repository for WorkSchedule entity."""
-    
+
     def __init__(self, session: AsyncSession):
         super().__init__(WorkSchedule, session)
-    
+
     async def get_by_employee(self, employee_id: int) -> list[WorkSchedule]:
         """Get all schedules for an employee."""
         result = await self.session.execute(
@@ -24,7 +24,7 @@ class ScheduleRepository(BaseRepository[WorkSchedule]):
             .order_by(WorkSchedule.day_of_week)
         )
         return list(result.scalars().all())
-    
+
     async def get_by_employee_and_day(
         self,
         employee_id: int,
@@ -40,7 +40,7 @@ class ScheduleRepository(BaseRepository[WorkSchedule]):
             .options(selectinload(WorkSchedule.breaks))
         )
         return result.scalar_one_or_none()
-    
+
     async def get_with_breaks(self, schedule_id: int) -> WorkSchedule | None:
         """Get schedule with breaks loaded."""
         result = await self.session.execute(
@@ -53,10 +53,10 @@ class ScheduleRepository(BaseRepository[WorkSchedule]):
 
 class BreakRepository(BaseRepository[WorkBreak]):
     """Repository for WorkBreak entity."""
-    
+
     def __init__(self, session: AsyncSession):
         super().__init__(WorkBreak, session)
-    
+
     async def get_by_schedule(self, schedule_id: int) -> list[WorkBreak]:
         """Get all breaks for a schedule."""
         result = await self.session.execute(

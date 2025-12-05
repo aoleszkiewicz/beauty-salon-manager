@@ -29,13 +29,13 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Ensure data directory exists for SQLite
     os.makedirs("data", exist_ok=True)
-    
+
     # Create database tables
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     yield
-    
+
     # Cleanup
     await engine.dispose()
 
@@ -45,7 +45,7 @@ app = FastAPI(
     version=settings.app_version,
     description="""
     Beauty Salon Manager API - Manage appointments, employees, services, and reporting.
-    
+
     ## Features
     - **Employee Management**: Create and manage salon staff
     - **Customer Database**: Maintain client information
@@ -54,7 +54,7 @@ app = FastAPI(
     - **Appointments**: Book visits with availability validation
     - **Calendar**: Aggregated view of appointments and breaks
     - **Reports**: Income, service popularity, and employee performance
-    
+
     ## Authentication
     This API uses HTTP Basic Authentication. Include your email and password
     in the Authorization header for all authenticated endpoints.

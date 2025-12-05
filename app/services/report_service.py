@@ -21,10 +21,10 @@ from app.schemas.calendar import (
 
 class ReportService:
     """Service for generating business reports."""
-    
+
     def __init__(self, session: AsyncSession):
         self.session = session
-    
+
     async def get_income_report(
         self,
         start_date: date,
@@ -33,7 +33,7 @@ class ReportService:
         """Generate income report for date range."""
         start_dt = datetime.combine(start_date, datetime.min.time())
         end_dt = datetime.combine(end_date, datetime.max.time())
-        
+
         # Get completed visits income
         completed_result = await self.session.execute(
             select(
@@ -47,7 +47,7 @@ class ReportService:
             )
         )
         completed = completed_result.one()
-        
+
         # Get cancelled count
         cancelled_result = await self.session.execute(
             select(func.count(Visit.id))
@@ -58,7 +58,7 @@ class ReportService:
             )
         )
         cancelled_count = cancelled_result.scalar() or 0
-        
+
         return IncomeReportResponse(
             start_date=start_date,
             end_date=end_date,
@@ -66,7 +66,7 @@ class ReportService:
             completed_visits=completed.count,
             cancelled_visits=cancelled_count,
         )
-    
+
     async def get_service_popularity(
         self,
         start_date: date,
@@ -75,7 +75,7 @@ class ReportService:
         """Generate service popularity report."""
         start_dt = datetime.combine(start_date, datetime.min.time())
         end_dt = datetime.combine(end_date, datetime.max.time())
-        
+
         result = await self.session.execute(
             select(
                 Service.id,
@@ -92,7 +92,7 @@ class ReportService:
             .group_by(Service.id, Service.name)
             .order_by(func.count(Visit.id).desc())
         )
-        
+
         services = [
             ServicePopularityItem(
                 service_id=row.id,
@@ -102,13 +102,13 @@ class ReportService:
             )
             for row in result.all()
         ]
-        
+
         return ServicePopularityResponse(
             start_date=start_date,
             end_date=end_date,
             services=services,
         )
-    
+
     async def get_employee_performance(
         self,
         start_date: date,
@@ -117,7 +117,7 @@ class ReportService:
         """Generate employee performance report."""
         start_dt = datetime.combine(start_date, datetime.min.time())
         end_dt = datetime.combine(end_date, datetime.max.time())
-        
+
         result = await self.session.execute(
             select(
                 User.id,
@@ -134,7 +134,7 @@ class ReportService:
             .group_by(User.id, User.full_name)
             .order_by(func.sum(Visit.price).desc())
         )
-        
+
         employees = [
             EmployeePerformanceItem(
                 employee_id=row.id,
@@ -144,7 +144,7 @@ class ReportService:
             )
             for row in result.all()
         ]
-        
+
         return EmployeePerformanceResponse(
             start_date=start_date,
             end_date=end_date,

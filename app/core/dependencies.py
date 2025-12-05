@@ -3,7 +3,7 @@ Dependency injection for FastAPI.
 """
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -142,13 +142,13 @@ async def get_current_user(
 ) -> User:
     """Get current authenticated user from HTTP Basic credentials."""
     user = await user_repo.get_by_email(credentials.username)
-    
+
     if not user or not verify_password(credentials.password, user.hashed_password):
         raise UnauthorizedError("Invalid credentials")
-    
+
     if not user.is_active:
         raise UnauthorizedError("User account is deactivated")
-    
+
     return user
 
 

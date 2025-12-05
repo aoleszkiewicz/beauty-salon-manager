@@ -5,12 +5,11 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models.user import UserRole
 
-
 # ============== Request Schemas ==============
 
 class UserCreate(BaseModel):
     """Schema for creating a new user."""
-    
+
     email: EmailStr
     password: str
     full_name: str
@@ -19,7 +18,7 @@ class UserCreate(BaseModel):
 
 class UserUpdate(BaseModel):
     """Schema for updating a user."""
-    
+
     email: EmailStr | None = None
     password: str | None = None
     full_name: str | None = None
@@ -29,7 +28,7 @@ class UserUpdate(BaseModel):
 
 class LoginRequest(BaseModel):
     """Schema for login request."""
-    
+
     email: EmailStr
     password: str
 
@@ -38,9 +37,9 @@ class LoginRequest(BaseModel):
 
 class UserResponse(BaseModel):
     """Schema for user response."""
-    
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     email: str
     full_name: str
@@ -50,19 +49,19 @@ class UserResponse(BaseModel):
 
 class UserListResponse(BaseModel):
     """Schema for list of users response."""
-    
+
     items: list[UserResponse]
     total: int
 
 
 class TokenResponse(BaseModel):
     """Schema for token response."""
-    
+
     access_token: str
     token_type: str = "bearer"
 
 
 class MessageResponse(BaseModel):
     """Generic message response."""
-    
+
     message: str
